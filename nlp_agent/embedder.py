@@ -1,6 +1,6 @@
 import torch
 from transformers import AutoTokenizer, AutoModel
-from typing import Dict, Any
+from typing import Dict, Any, List
 from mecab import MeCab
 
 class TextEmbedder:

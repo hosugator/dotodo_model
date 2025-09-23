@@ -28,3 +28,6 @@ tqdm==4.67.1
 transformers==4.56.2
 typing_extensions==4.15.0
 urllib3==2.5.0
+fastapi
+uvicorn[standard]
+pydantic

@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from typing import Dict, Any, List, Tuple
-from embedder import TextEmbedder
+from .embedder import TextEmbedder
 
 
 class ToDoMatcher:

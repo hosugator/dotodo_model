@@ -1,10 +1,10 @@
 import json
 from typing import Dict, Any, List
 
-# parser.py, embedder.py, matcher.py 파일을 임포트
-from parser import Parser
-from embedder import TextEmbedder
-from matcher import ToDoMatcher
+# .parser, .embedder, .matcher 파일을 임포트
+from .parser import Parser
+from .embedder import TextEmbedder
+from .matcher import ToDoMatcher
 
 class NLPAgent:
     def __init__(self):
