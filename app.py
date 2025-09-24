@@ -10,9 +10,12 @@ import os
 # 이렇게 하면 파이썬이 정확한 경로를 찾아갈 수 있습니다.
 from nlp_agent.nlp_agent import NLPAgent
 
+
 # Pydantic을 사용해 요청 데이터의 형식을 정의합니다.
 class TextRequest(BaseModel):
-    text: str
+    user_id: str
+    voice_text: str
+
 
 # NLPAgent 인스턴스를 초기화합니다.
 agent = NLPAgent()
@@ -24,18 +27,39 @@ app = FastAPI(
     version="1.0.0",
 )
 
+
 @app.get("/")
 def read_root():
     return {"message": "DoToDo NLP Model Service is running."}
+
 
 @app.post("/process-text", response_model=List[Dict[str, Any]])
 def process_text_endpoint(request_body: TextRequest):
     """
     사용자의 자연어 텍스트를 받아 TODO 항목을 추출하고 처리합니다.
     """
-    input_text = request_body.text
+    input_text = request_body.voice_text
     processed_todos = agent.process_text(input_text)
-    return processed_todos
+    final_response = []
+    for item in processed_todos:
+        # 응답 순서를 재정렬
+        # 'embedding' 값을 반올림하여 간소화
+        embedding_list = [round(v, 4) for v in item["embedding"]]
+
+        ordered_item = {
+            "user_id": request_body.user_id,
+            "category": item["category"],
+            "todo": item["todo"],
+            "simplified_text": item["simplified_text"],
+            "date": item["date"],
+            "time": item["time"],
+            "original_sentence": item["original_sentence"],
+            "embedding": embedding_list,
+        }
+        final_response.append(ordered_item)
+
+    return final_response
+
 
 if __name__ == "__main__":
     # uvicorn으로 FastAPI 앱을 실행합니다.

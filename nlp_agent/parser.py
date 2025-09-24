@@ -27,7 +27,7 @@ class Parser:
         """
         today = datetime.today()
 
-        if relative_date == "오늘" or relative_date == "": 
+        if relative_date == "오늘" or relative_date == "":
             return today.strftime("%Y-%m-%d")
         elif relative_date == "내일":
             tomorrow = today + timedelta(days=1)
