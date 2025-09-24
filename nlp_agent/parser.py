@@ -27,7 +27,7 @@ class Parser:
         """
         today = datetime.today()
 
-        if relative_date == "오늘":
+        if relative_date == "오늘" or relative_date == "": 
             return today.strftime("%Y-%m-%d")
         elif relative_date == "내일":
             tomorrow = today + timedelta(days=1)
@@ -120,7 +120,7 @@ class Parser:
         sentences = self._split_sentences(text)
 
         parsed_results = []
-        last_known_date = ""
+        last_known_date = datetime.today().strftime("%Y-%m-%d")
 
         for sentence in sentences:
             if not sentence:
@@ -141,7 +141,7 @@ class Parser:
 if __name__ == "__main__":
     parser_instance = Parser()
 
-    input_text = "내일 아침 헬스장에 가야 해, 그리고 오후 8시에 친구와 저녁 약속이 있어. 주말에는 집 근처 마트에서 장을 봐야지."
+    input_text = "아침 헬스장에 가야 해, 그리고 오후 8시에 친구와 저녁 약속이 있어. 주말에는 집 근처 마트에서 장을 봐야지."
     parsed_list = parser_instance.parse_multiple_sentences(input_text)
 
     print("\n\n--- 최종 JSON 출력 ---")
