@@ -1,5 +1,3 @@
-# nlp_agent/recommendation_engine.py
-
 import chromadb
 from chromadb.utils import embedding_functions
 from typing import List, Dict, Any
@@ -42,14 +40,15 @@ class RecommendationEngine:
 
         # 1. 빈도수 기반 추천 검색 (같은 날 수행된 할 일)
         try:
+            # 먼저 현재 사용자와 가장 유사한 문서들을 찾습니다.
             results = self.collection.query(
                 query_embeddings=[embedding],
                 n_results=limit,
                 where={"user_id": user_id},
             )
 
-            for doc, metadata in zip(results["documents"][0], results["metadatas"][0]):
-                # ✅ 수정된 부분: '$and' 연산자를 사용하여 여러 조건 결합
+            # 검색된 문서의 날짜를 기반으로 동일 날짜에 포함된 모든 할 일들의 빈도를 계산합니다.
+            for metadata in results.get("metadatas", [[]])[0]:
                 similar_day_todos = self.collection.get(
                     where={
                         "$and": [
@@ -60,6 +59,7 @@ class RecommendationEngine:
                 )
 
                 for day_doc in similar_day_todos["documents"]:
+                    # ✅ 현재 입력된 할 일은 추천하지 않습니다.
                     if day_doc != todo_text:
                         all_recommendations[day_doc] = (
                             all_recommendations.get(day_doc, 0) + 1
@@ -75,9 +75,10 @@ class RecommendationEngine:
                 where={"user_id": user_id},
             )
 
-            for i, doc in enumerate(similarity_results["documents"][0]):
-                similarity_score = similarity_results["distances"][0][i]
+            for i, doc in enumerate(similarity_results.get("documents", [[]])[0]):
+                similarity_score = similarity_results.get("distances", [[]])[0][i]
 
+                # ✅ 현재 입력된 할 일은 추천하지 않으며, 유사도 기준을 충족하는 항목만 추가합니다.
                 if doc != todo_text and similarity_score >= min_similarity:
                     all_recommendations[doc] = all_recommendations.get(doc, 0) + 1
         except Exception as e:
@@ -92,4 +93,7 @@ class RecommendationEngine:
 
         sorted_recs = sorted(final_recs.items(), key=lambda item: item[1], reverse=True)
 
-        return [{"todo": item[0], "frequency": item[1]} for item in sorted_recs]
+        # ✅ 4. 최종 추천 목록을 상위 3개로 제한
+        limited_recs = sorted_recs[:3]
+
+        return [{"todo": item[0], "frequency": item[1]} for item in limited_recs]
