@@ -105,10 +105,12 @@ OUTPUT ONLY THIS JSON:
         recent_todos = []
         
         for day_data in p_data[-3:]:
-            for category, todos in day_data['completed_todos'].items():
+            # 변경: 딕셔너리 접근을 Pydantic 객체 속성 접근으로 변경
+            for category, todos in day_data.completed_todos.root.items():
                 category_counts[category] = category_counts.get(category, 0) + len(todos)
                 for todo in todos[-2:]:
-                    recent_todos.append(f"{category}: {todo['todo']}")
+                    # 변경: 딕셔너리 접근을 Pydantic 객체 속성 접근으로 변경
+                    recent_todos.append(f"{category}: {todo.todo}")
         
         compressed = {
             "patterns": category_counts,
@@ -122,12 +124,14 @@ OUTPUT ONLY THIS JSON:
         incomplete_todos = []
         completed_todos = []
         
-        for category, todos in h_data['scheduled_todos'].items():
+        # 변경: 딕셔너리 접근을 Pydantic 객체 속성 접근으로 변경
+        for category, todos in h_data.scheduled_todos.root.items():
             for todo in todos:
-                if todo['completed']:
-                    completed_todos.append(f"{category}: {todo['todo']}")
+                # 변경: 딕셔너리 접근을 Pydantic 객체 속성 접근으로 변경
+                if todo.completed:
+                    completed_todos.append(f"{category}: {todo.todo}")
                 else:
-                    incomplete_todos.append(f"{category}: {todo['todo']}")
+                    incomplete_todos.append(f"{category}: {todo.todo}")
         
         compressed = {
             "incomplete": incomplete_todos,
@@ -181,18 +185,13 @@ OUTPUT ONLY THIS JSON:
     
         return final_output
     
-    def run_recommendation_process(self) -> Dict[str, Any]:
+    def run_recommendation_process(self, p_data: List[Dict], h_data: Dict) -> Dict[str, Any]:
         """최적화된 단일 프롬프트 추천 프로세스"""
         print("=== 최적화된 Todo 추천 시스템 시작 ===")
         
-        # 1. 데이터 로드
-        print("1. 데이터 로딩...")
-        combined_data = self.load_json_file('dummy_data.json')
-        p_data = combined_data['p_data']
-        h_data = combined_data['h_data']
-        
+        # 1. 데이터 로드 (파일 로딩 로직 제거)
         if not p_data or not h_data:
-            print("❌ 데이터 로딩 실패")
+            print("❌ 데이터 로딩 실패: 입력 데이터가 유효하지 않습니다.")
             return {}
         
         print("✅ 데이터 로딩 완료")
@@ -226,9 +225,9 @@ OUTPUT ONLY THIS JSON:
         print("\n3. 최종 출력 생성...")
         final_output = self.generate_final_output(single_result)
         
-        # 6. 파일 저장
-        print("\n4. 결과 저장...")
-        self.save_json_file(final_output, 'final_recommendations.json')
+        # # 6. 파일 저장
+        # print("\n4. 결과 저장...")
+        # self.save_json_file(final_output, 'final_recommendations.json')
         
         print("\n=== 최적화된 추천 시스템 완료 ===")
         return final_output
