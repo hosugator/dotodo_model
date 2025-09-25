@@ -1,0 +1,167 @@
+{
+  "p_data": [
+    {
+      "user_id": "user001",
+      "date": "2025-09-15",
+      "completed_todos": {
+        "일상": [
+          {"todo": "설거지하기", "completed": true},
+          {"todo": "빨래하기", "completed": true}
+        ],
+        "업무": [
+          {"todo": "프레젠테이션 준비하기", "completed": true}
+        ],
+        "운동": [
+          {"todo": "산책하기", "completed": true}
+        ],
+        "공부": [
+          {"todo": "파이썬 강의 듣기", "completed": true},
+          {"todo": "영어 단어 암기", "completed": true}
+        ]
+      }
+    },
+    {
+      "user_id": "user001",
+      "date": "2025-09-16",
+      "completed_todos": {
+        "일상": [
+          {"todo": "설거지하기", "completed": true}
+        ],
+        "업무": [
+          {"todo": "회의 참석하기", "completed": true}
+        ],
+        "운동": [
+          {"todo": "헬스장 가기", "completed": true},
+          {"todo": "산책하기", "completed": true}
+        ],
+        "공부": [
+          {"todo": "영어 단어 암기", "completed": true}
+        ]
+      }
+    },
+    {
+      "user_id": "user001",
+      "date": "2025-09-17",
+      "completed_todos": {
+        "일상": [
+          {"todo": "설거지하기", "completed": true},
+          {"todo": "빨래하기", "completed": true}
+        ],
+        "업무": [
+          {"todo": "보고서 작성하기", "completed": true}
+        ],
+        "운동": [
+          {"todo": "산책하기", "completed": true}
+        ],
+        "공부": [
+          {"todo": "파이썬 강의 듣기", "completed": true}
+        ]
+      }
+    },
+    {
+      "user_id": "user001",
+      "date": "2025-09-18",
+      "completed_todos": {
+        "일상": [
+          {"todo": "설거지하기", "completed": true}
+        ],
+        "운동": [
+          {"todo": "헬스장 가기", "completed": true},
+          {"todo": "산책하기", "completed": true}
+        ],
+        "공부": [
+          {"todo": "파이썬 강의 듣기", "completed": true},
+          {"todo": "영어 단어 암기", "completed": true}
+        ],
+        "장보기": [
+          {"todo": "생필품 구매하기", "completed": true}
+        ]
+      }
+    },
+    {
+      "user_id": "user001",
+      "date": "2025-09-19",
+      "completed_todos": {
+        "일상": [
+          {"todo": "설거지하기", "completed": true},
+          {"todo": "빨래하기", "completed": true}
+        ],
+        "업무": [
+          {"todo": "팀 미팅 참석하기", "completed": true}
+        ],
+        "운동": [
+          {"todo": "산책하기", "completed": true}
+        ]
+      }
+    },
+    {
+      "user_id": "user001",
+      "date": "2025-09-20",
+      "completed_todos": {
+        "일상": [
+          {"todo": "설거지하기", "completed": true}
+        ],
+        "업무": [
+          {"todo": "이메일 답변하기", "completed": true},
+          {"todo": "업무 계획 세우기", "completed": true}
+        ],
+        "운동": [
+          {"todo": "헬스장 가기", "completed": true},
+          {"todo": "산책하기", "completed": true}
+        ],
+        "공부": [
+          {"todo": "영어 단어 암기", "completed": true}
+        ]
+      }
+    },
+    {
+      "user_id": "user001",
+      "date": "2025-09-21",
+      "completed_todos": {
+        "일상": [
+          {"todo": "설거지하기", "completed": true},
+          {"todo": "빨래하기", "completed": true},
+          {"todo": "청소기 돌리기", "completed": true}
+        ],
+        "운동": [
+          {"todo": "산책하기", "completed": true}
+        ],
+        "공부": [
+          {"todo": "파이썬 강의 듣기", "completed": true}
+        ],
+        "기타": [
+          {"todo": "독서하기", "completed": true}
+        ]
+      }
+    }
+  ],
+  "h_data": {
+    "user_id": "user001",
+    "date": "2025-09-22",
+    "scheduled_todos": {
+      "일상": [
+        {"todo": "방 청소하기", "completed": false},
+        {"todo": "쓰레기 버리기", "completed": true},
+        {"todo": "화분 물주기", "completed": false}
+      ],
+      "업무": [
+        {"todo": "업무 보고서 작성하기", "completed": false},
+        {"todo": "클라이언트 미팅 준비하기", "completed": true}
+      ],
+      "운동": [
+        {"todo": "요가하기", "completed": false},
+        {"todo": "스트레칭하기", "completed": false}
+      ],
+      "기타": [
+        {"todo": "독서하기", "completed": false},
+        {"todo": "음악 듣기", "completed": true}
+      ],
+      "공부": [
+        {"todo": "알고리즘 문제 풀기", "completed": false}
+      ],
+      "장보기": [
+        {"todo": "마트에서 생필품 구매하기", "completed": false}
+      ]
+    }
+  }
+}

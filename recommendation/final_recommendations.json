@@ -1,0 +1,22 @@
+{
+  "user_id": "user001",
+  "date": "2025-09-25",
+  "recommendations": [
+    {
+      "category": "운동",
+      "todo": "명상하기",
+      "completed": false
+    },
+    {
+      "category": "공부",
+      "todo": "프로그래밍 프로젝트 진행하기",
+      "completed": false
+    },
+    {
+      "category": "일상",
+      "todo": "가족과 저녁 식사 준비하기",
+      "completed": false
+    }
+  ],
+  "reason": "명상하기는 **정신적 안정**으로 도움이 될 거예요. 프로그래밍 프로젝트 진행하기는 **실력 향상** 때문에 좋을 것 같아요. 가족과 저녁 식사 준비하기를 하시면 **가족 유대감**이 향상될 거예요."
+}
