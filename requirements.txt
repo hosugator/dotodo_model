@@ -31,3 +31,13 @@ urllib3==2.5.0
 fastapi
 uvicorn[standard]
 pydantic
+
+
+# Todo Recommendation System 추가 패키지 (Thu Sep 25 11:14:33 KST 2025)
+langchain==0.3.27
+langchain-community==0.3.29
+langchain-core==0.3.76
+langchain-openai==0.3.33
+langchain-text-splitters==0.3.11
+openai==1.109.1
+python-dotenv==1.1.1
