@@ -129,9 +129,9 @@ OUTPUT ONLY THIS JSON:
             for todo in todos:
                 # 변경: 딕셔너리 접근을 Pydantic 객체 속성 접근으로 변경
                 if todo.completed:
-                    completed_todos.append(f"{category}: {todo.todo}")
+                    completed_todos.append(f"{todo.todo}")
                 else:
-                    incomplete_todos.append(f"{category}: {todo.todo}")
+                    incomplete_todos.append(f"{todo.todo}")
         
         compressed = {
             "incomplete": incomplete_todos,
