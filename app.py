@@ -9,6 +9,31 @@ import os
 from nlp_agent.nlp_agent import NLPAgent
 from recommendation.todo_recommendation_system import LangChainTodoRecommendationSystem
 
+# Pydantic 모델을 재정의하여 추천 항목을 포함합니다.
+class Recommendation(BaseModel):
+    todo: str
+    frequency: int
+
+class ProcessedTodoItem(BaseModel):
+    user_id: str
+    todo: str
+    date: str
+    time: str
+    original_sentence: str
+    embedding: List[float]
+    category: str
+    recommendations: List[Recommendation]
+
+class TodoResponse(BaseModel):
+    success: bool
+    todos: List[ProcessedTodoItem]
+
+# Pydantic을 사용해 요청 데이터의 형식을 정의합니다.
+class TextRequest(BaseModel):
+    user_id: str
+    text: str
+
+
 # 새로운 요청 데이터 모델을 정의합니다.
 class PastTodoItem(BaseModel):
     todo: str
@@ -40,17 +65,6 @@ class RecommendationRequest(BaseModel):
     p_data: List[PastData]
     h_data: TodayData
 
-# Pydantic을 사용해 요청 데이터의 형식을 정의합니다.
-class TextRequest(BaseModel):
-    user_id: str
-    text: str
-
-
-# 새로운 응답 모델을 정의합니다.
-class TodoResponse(BaseModel):
-    success: bool
-    todos: List[Dict[str, Any]]
-
 
 # NLPAgent와 추천 시스템 인스턴스를 초기화합니다.
 agent = NLPAgent()
@@ -74,26 +88,19 @@ def read_root():
 @app.post("/process-text", response_model=TodoResponse)
 def process_text_endpoint(request_body: TextRequest):
     """
-    사용자의 자연어 텍스트를 받아 TODO 항목을 추출하고 처리합니다.
+    사용자의 자연어 텍스트를 받아 TODO 항목을 추출하고 처리하며,
+    추천 항목을 함께 반환합니다. 모든 로직은 NLPAgent에서 처리됩니다.
     """
     input_text = request_body.text
-    processed_todos = agent.process_text(input_text)
+    
+    # NLPAgent의 process_text 메소드를 호출하여 모든 파이프라인을 실행합니다.
+    # 이 메소드는 할 일 저장, 카테고리 할당, 추천 검색까지 모두 포함한 결과를 반환합니다.
+    final_todos = agent.process_text(text=input_text, user_id=request_body.user_id)
 
-    final_todos = []
-    for item in processed_todos:
-        # 'embedding' 값을 반올림하여 간소화
-        embedding_list = [round(v, 4) for v in item["embedding"]]
-
-        ordered_item = {
-            "user_id": request_body.user_id,
-            "todo": item["todo"],
-            "date": item["date"],
-            "time": item["time"],
-            "original_sentence": item["original_sentence"],
-            "embedding": embedding_list,
-            "category": item["category"],
-        }
-        final_todos.append(ordered_item)
+    # final_todos 리스트의 각 항목에 대해 embedding 값을 반올림하여 간소화합니다.
+    for item in final_todos:
+        if 'embedding' in item and isinstance(item['embedding'], list):
+            item['embedding'] = [round(v, 4) for v in item['embedding']]
 
     return {"success": True, "todos": final_todos}
 
