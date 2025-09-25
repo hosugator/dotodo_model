@@ -13,6 +13,33 @@ class Parser:
         self.tokenizer = MeCab()
         print("Parser 초기화 완료: Mecab 엔진 사용")
 
+        # 원본 문장에서 찾아야 할 신조어 목록
+        self.special_words = [
+            "엽떡",
+            "짜파구리",
+            "맞담",
+            "인강",
+            "쿠팡",
+            "배민",
+            "요기요",
+            "로제",
+            "혼술",
+            "혼밥",
+            "소확행",
+            "퇴근길",
+            "출근길",
+            "점메추",
+            "점메추",
+            "아아",
+            "아메",
+            "아카",
+            "아카페라",
+            "카페라떼",
+            "카페모카",
+            "카모",
+            "카모카",
+        ]
+
     def _split_sentences(self, text: str) -> List[str]:
         sentences = [
             s.strip()
@@ -55,8 +82,26 @@ class Parser:
     def _parse_single_sentence(self, sentence: str) -> Dict[str, Any]:
         print(f"\n[STEP 1] 원본 문장: '{sentence}'")
 
-        parsed_tokens = self.tokenizer.pos(sentence)
-        print(f"[STEP 2] Mecab 품사 태깅 결과: {parsed_tokens}")
+        # 1. 원본 문장에서 신조어/줄임말을 먼저 찾습니다.
+        for word in self.special_words:
+            if word in sentence:
+                # 2. Mecab 토큰 결과를 덮어쓰기 위해, 해당 단어를 명사로 간주하고 새로 파싱합니다.
+                # 예: '아침에 엽떡먹고' -> '아침' + '엽떡' + '먹고'
+                processed_tokens = []
+                current_text = sentence
+                while word in current_text:
+                    pre_word_text, post_word_text = current_text.split(word, 1)
+                    processed_tokens.extend(self.tokenizer.pos(pre_word_text.strip()))
+                    processed_tokens.append((word, "NNG"))
+                    current_text = post_word_text.strip()
+                processed_tokens.extend(self.tokenizer.pos(current_text))
+                parsed_tokens = processed_tokens
+                print(f"[STEP 2] 신조어 처리 후 Mecab 품사 태깅 결과: {parsed_tokens}")
+                break
+            else:
+                # 신조어가 없으면 기존 Mecab 파싱을 사용합니다.
+                parsed_tokens = self.tokenizer.pos(sentence)
+                print(f"[STEP 2] Mecab 품사 태깅 결과: {parsed_tokens}")
 
         date = ""
         time = ""
@@ -141,7 +186,7 @@ class Parser:
 if __name__ == "__main__":
     parser_instance = Parser()
 
-    input_text = "아침 헬스장에 가야 해, 그리고 오후 8시에 친구와 저녁 약속이 있어. 주말에는 집 근처 마트에서 장을 봐야지."
+    input_text = "아침에 엽떡먹고, 그리고 오후 8시에 친구와 강남에서 저녁 약속이 있어. 주말에는 집 근처 마트에서 장을 봐야지."
     parsed_list = parser_instance.parse_multiple_sentences(input_text)
 
     print("\n\n--- 최종 JSON 출력 ---")
