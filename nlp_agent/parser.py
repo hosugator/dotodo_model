@@ -7,7 +7,6 @@ import os
 
 # 기존 구두점 기반의 SENTENCE_SPLITTER는 사용하지 않습니다.
 
-
 class Parser:
     def __init__(self):
         self.tokenizer = MeCab()
@@ -15,136 +14,77 @@ class Parser:
 
         # 원본 문장에서 찾아야 할 신조어 목록
         self.special_words = [
-            "엽떡",
-            "짜파구리",
-            "맞담",
-            "인강",
-            "쿠팡",
-            "배민",
-            "요기요",
-            "로제",
-            "혼술",
-            "혼밥",
-            "소확행",
-            "퇴근길",
-            "출근길",
-            "점메추",
-            "아아",
-            "아메",
-            "아카",
-            "아카페라",
-            "카페라떼",
-            "카페모카",
-            "카모",
-            "카모카",
-            "헬스장",
-            "교촌치킨",
+            "엽떡", "짜파구리", "맞담", "인강", "쿠팡", "배민", "요기요", "로제", "혼술",
+            "혼밥", "소확행", "퇴근길", "출근길", "점메추", "아아", "아메", "아카",
+            "아카페라", "카페라떼", "카페모카", "카모", "카모카", "헬스장", "교촌치킨"
         ]
-
+        
         # 새로운 문장 분리 기준 토큰/품사 목록
-        # '그리고' (MAJ: 접속 부사), '하고' (EC/JC: 연결어미/접속조사), '해야지' (EF: 종결어미) 등을 포함
         self.SPLIT_TOKENS = {
-            # Mecab 품사 태그 기준:
-            # EC (연결 어미): -고, -으며, -지만 등
-            # JC (접속 조사): -와/과, -랑 등 (문장 분리에는 너무 과할 수 있지만, '하고' 등을 분리하기 위해 포함)
-            "EC",
-            "JC",
-            # MAJ (접속 부사): 그리고, 그러나, 하지만 등
-            "MAJ",
+            "EC", # 연결 어미: -고, -으며 등
+            "JC", # 접속 조사: -와/과, -랑 등
+            "MAJ" # 접속 부사: 그리고, 그러나 등
         }
         # 토큰 텍스트 기준:
-        self.SPLIT_TEXTS = [
-            "그리고",
-            "그러고",
-            "해야지",
-            "해야겠다",
-            "해야돼",
-            "해야만",
-            "하고",
-            "이고",
-        ]
+        self.SPLIT_TEXTS = ["그리고", "그러고", "해야지", "해야겠다", "해야돼", "해야만", "하고", "이고"]
 
     def _split_sentences(self, text: str) -> List[str]:
         # Mecab으로 전체 텍스트를 형태소 분석합니다.
         tokens = self.tokenizer.pos(text)
-
+        
         sentences = []
         current_sentence_tokens = []
-
+        
         for i, (token, pos) in enumerate(tokens):
             current_sentence_tokens.append(token)
-
-            # 1. 품사 기반 분리: 접속 부사 (MAJ)나 연결 어미 (EC) 등을 기준으로 분리
+            
             is_pos_split = pos in self.SPLIT_TOKENS
-            # 2. 텍스트 기반 분리: 특정 텍스트 ('해야지', '그리고') 등을 기준으로 분리
             is_text_split = token in self.SPLIT_TEXTS
-            # 3. 종결 어미 기반 분리: 문장의 끝 (EF/EP+EF)
-            is_end_of_sentence = pos.startswith("E")  # E: 어미 (EF: 종결, EC: 연결)
-
+            
             should_split = False
-
-            # '그리고' 등 접속 부사(MAJ)나 특정 텍스트는 바로 다음 토큰부터 새로운 문장 시작
+            
             if is_pos_split or is_text_split:
-                should_split = True
-
-            # 종결 어미(EF)가 나왔고, 뒤에 더이상 토큰이 없거나, 뒤에 다른 문장 성분이 있을 경우 문장 종료
-            if is_end_of_sentence and (
-                i == len(tokens) - 1 or tokens[i + 1][1] not in ["SF", "SE"]
-            ):  # SF(마침표), SE(줄임표) 제외
-                # '해야지'는 이미 토큰 분리에 포함되어 있으므로, 일반적인 종결 어미 처리
-                pass
-
+                 should_split = True
+            
             if should_split or i == len(tokens) - 1:
-                # 분리 기준 토큰 자체는 이전 문장에 포함 (사용자 의도가 그 문장까지의 연속된 할 일일 가능성 높음)
                 sentence = "".join(current_sentence_tokens).strip()
                 if sentence:
                     sentences.append(sentence)
                 current_sentence_tokens = []
-
-        # 분리 기준 토큰이 마지막에 나와 current_sentence_tokens에 남아있는 경우 처리
-        if current_sentence_tokens:
-            sentence = "".join(current_sentence_tokens).strip()
-            if sentence:
-                sentences.append(sentence)
-
-        # **최종 처리:** 문장 분리 기준 토큰이 항상 뒤 문장의 시작점이 되도록 조정 (예: '엽떡먹고그리고' -> '엽떡먹고' + '그리고')
+        
+        # 후처리: 분리 기준 토큰 처리 ('그리고', '해야지' 등이 분리된 채로 남은 것 처리)
         final_sentences = []
         for s in sentences:
             found_split = False
             for text in self.SPLIT_TEXTS:
                 if s.endswith(text):
-                    final_sentences.append(s[: -len(text)].strip())
+                    final_sentences.append(s[:-len(text)].strip())
                     final_sentences.append(text)
                     found_split = True
                     break
             if not found_split:
-                final_sentences.append(s)
-
-        # 토큰 텍스트로만 남은 분리 기준은 이전 문장에 병합 (예: ['엽떡먹고', '그리고', '치킨먹어야지'] -> ['엽떡먹고 그리고', '치킨먹어야지'])
+                 final_sentences.append(s)
+        
+        
         coalesced_sentences = []
         i = 0
         while i < len(final_sentences):
             current = final_sentences[i]
             if current in self.SPLIT_TEXTS and i > 0:
-                coalesced_sentences[-1] += " " + current  # 이전 문장에 합치기
-                # 다음 요소가 문장의 끝이 아니면 다음 요소와도 합치기 (최대한 하나의 todo로 유지)
-                if (
-                    i + 1 < len(final_sentences)
-                    and final_sentences[i + 1] not in self.SPLIT_TEXTS
-                ):
-                    coalesced_sentences[-1] += " " + final_sentences[i + 1]
-                    i += 1  # 다음 요소 건너뛰기
+                coalesced_sentences[-1] += " " + current # 이전 문장에 합치기
+                if i + 1 < len(final_sentences) and final_sentences[i+1] not in self.SPLIT_TEXTS:
+                     coalesced_sentences[-1] += " " + final_sentences[i+1]
+                     i += 1
             else:
-                coalesced_sentences.append(current)
+                 coalesced_sentences.append(current)
             i += 1
 
-        # 최종적으로 빈 문자열 제거
         return [s for s in coalesced_sentences if s.strip()]
 
-    # 나머지 함수는 동일하게 유지됩니다.
+
     def _get_absolute_date(self, relative_date: str) -> str:
         """
-        '오늘', '내일', '주말' 등의 상대적 날짜를 YYYY-MM-DD 형식으로 변환합니다.
+        '오늘', '내일', '주말' 등의 상대적 날짜를 YYYY-MM-DD 형식으로 변환합니다. (동일)
         """
         today = datetime.today()
 
@@ -176,11 +116,10 @@ class Parser:
     def _parse_single_sentence(self, sentence: str) -> Dict[str, Any]:
         print(f"\n[STEP 1] 원본 문장: '{sentence}'")
 
-        # 1. 원본 문장에서 신조어/줄임말을 먼저 찾습니다.
+        # 1. 원본 문장에서 신조어/줄임말을 먼저 찾습니다. (동일)
+        # ... (이 부분의 코드는 위에서 수정한 형태소 분리를 제외하고 동일하게 유지됩니다.)
         for word in self.special_words:
             if word in sentence:
-                # 2. Mecab 토큰 결과를 덮어쓰기 위해, 해당 단어를 명사로 간주하고 새로 파싱합니다.
-                # 예: '아침에 엽떡먹고' -> '아침' + '엽떡' + '먹고'
                 processed_tokens = []
                 current_text = sentence
                 while word in current_text:
@@ -193,15 +132,16 @@ class Parser:
                 print(f"[STEP 2] 신조어 처리 후 Mecab 품사 태깅 결과: {parsed_tokens}")
                 break
             else:
-                # 신조어가 없으면 기존 Mecab 파싱을 사용합니다.
                 parsed_tokens = self.tokenizer.pos(sentence)
                 print(f"[STEP 2] Mecab 품사 태깅 결과: {parsed_tokens}")
 
         date = ""
         time = ""
         metadata_tokens = set()
+        verb_parts = [] # 동사 원형을 저장할 리스트
 
         for i, (token, pos) in enumerate(parsed_tokens):
+            # 메타데이터 추출 (동일)
             if token in ["내일", "오늘", "이번주", "다음주", "주말"]:
                 date = self._get_absolute_date(token)
                 metadata_tokens.add((token, pos))
@@ -219,8 +159,16 @@ class Parser:
                 else:
                     time = f"{token}"
                     metadata_tokens.add((token, pos))
+            
+            # TODO: 동사/형용사 원형 추출 및 필터링
+            elif pos in ["VV", "VA"]: # VV: 동사, VA: 형용사
+                # '있-'이나 '없-'으로 시작하는 경우는 제외 (상태 표현이지 할 일이 아님)
+                if not (token.startswith("있") or token.startswith("없")):
+                    verb_parts.append(token)
+                metadata_tokens.add((token, pos))
 
-        # 연속된 명사(NNG, NNP)를 결합하여 todo_parts에 추가
+
+        # 연속된 명사(NNG, NNP)를 결합하여 todo_parts에 추가 (동일)
         todo_parts = []
         i = 0
         while i < len(parsed_tokens):
@@ -243,8 +191,29 @@ class Parser:
                 i = j
             else:
                 i += 1
-
-        todo = " ".join(todo_parts)
+        
+        # 3. todo_parts와 verb_parts를 결합하고, 동사에 '-기'를 붙여 명사화합니다.
+        
+        # 명사 부분에 동사 원형을 추가
+        if verb_parts:
+            # 동사 원형에 '-기'를 붙인 명사구를 생성합니다. (예: 먹다 -> 먹기)
+            verb_noun = verb_parts[-1] + "기"
+            todo_parts.append(verb_noun)
+            
+            # 동사/형용사의 원형 부분만 명사구로 만들고, 나머지 명사는 그대로 둠
+            # 동사 부분이 중복되지 않게 마지막 동사만 사용하거나, 명사 리스트 뒤에 붙이는 방식을 선택합니다.
+            # 여기서는 명사 뒤에 최종 명사형 동사를 붙이는 방식을 사용합니다.
+            
+            # 최종 todo 문장 생성: 명사구 + '동사원형기'
+            todo = " ".join(todo_parts)
+            
+        else:
+            # 동사가 없으면 명사구만 사용
+            todo = " ".join(todo_parts)
+        
+        # todo가 비어있으면 문장 전체를 다시 사용 (예외 처리)
+        if not todo.strip():
+            todo = sentence
 
         print("\n--- 파싱 결과 최종 확인 ---")
         print(f"Todo: '{todo}'")
@@ -282,8 +251,12 @@ if __name__ == "__main__":
 
     # 테스트 케이스
     input_text = "아침에 엽떡 먹고 그리고 오후 8시에 친구와 강남에서 저녁 약속이 있어 주말에는 집 근처 마트에서 장을 봐야지"
+    
+    # 1. 동사 명사화 테스트
+    # "엽떡 먹고 그리고" -> "엽떡 먹기"
+    # "저녁 약속이 있어" -> 동사('있어') 제외, 명사구만 추출
+    # "장을 봐야지" -> "장 보기"
     parsed_list = parser_instance.parse_multiple_sentences(input_text)
 
     print("\n\n--- 최종 JSON 출력 ---")
     print(json.dumps(parsed_list, indent=4, ensure_ascii=False))
- 
