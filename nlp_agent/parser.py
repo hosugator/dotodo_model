@@ -99,8 +99,6 @@ class Parser:
     def _get_absolute_date(self, relative_date: str) -> str:
         """ 상대적 날짜를 절대 날짜로 변환 """
         today = datetime.today()
-        # 오늘 날짜는 2025-09-30 가정 (테스트 결과와 일치하도록)
-        today = datetime(2025, 9, 30) 
         
         if relative_date == "오늘" or relative_date == "":
             return today.strftime("%Y-%m-%d")
