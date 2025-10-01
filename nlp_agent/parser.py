@@ -308,8 +308,7 @@ class Parser:
         sentences = self._split_sentences(text) 
 
         parsed_results = []
-        # 테스트 결과 재현을 위해 2025-09-30로 고정 (실제 사용 시 datetime.today() 사용)
-        last_known_date = datetime(2025, 9, 30).strftime("%Y-%m-%d") 
+        last_known_date = datetime.today().strftime("%Y-%m-%d")
 
         for sentence in sentences:
             if not sentence:
@@ -327,7 +326,7 @@ class Parser:
                  continue
 
 
-            if result["date"] and "2025-09-30" not in result["date"]: # '오늘'인 경우를 제외하고 업데이트
+            if result["date"] not in result["date"]: # '오늘'인 경우를 제외하고 업데이트
                 last_known_date = result["date"]
             elif last_known_date:
                 result["date"] = last_known_date
