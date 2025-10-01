@@ -4,21 +4,22 @@ FROM python:3.11-slim
 # 컨테이너 내 작업 디렉터리를 /app으로 설정합니다.
 WORKDIR /app
 
-# 애플리케이션의 의존성(requirements.txt) 파일을 컨테이너에 복사합니다.
+# 1. 의존성 파일 복사 (캐시 레이어 1: requirements.txt 내용이 바뀌지 않으면 아래 단계는 캐시 사용)
 COPY requirements.txt .
 
-# requirements.txt에 명시된 파이썬 라이브러리들을 설치합니다.
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 한국어 자연어 처리를 위한 MeCab과 관련 사전을 설치합니다.
-RUN pip install python-mecab-ko
-
-# 'nlp_agent' 폴더와 'app.py'를 포함한 나머지 모든 파일을 컨테이너의 /app 디렉터리로 복사합니다.
+# 2. 의존성 설치 및 MeCab 설치 (캐시 레이어 2: 가장 느린 단계. 캐시를 최대한 활용)
+# 두 개의 pip install을 하나로 합쳐 레이어 수를 줄였습니다.
+# 불필요한 캐시를 바로 삭제하여 빌드 이미지 크기를 줄였습니다.
+RUN pip install -r requirements.txt && \
+    pip install python-mecab-ko && \
+    rm -rf /root/.cache/pip
+    
+# 3. 소스 코드 복사 (캐시 레이어 3: 가장 자주 바뀌는 부분이므로 가장 뒤로 배치)
+# app.py나 nlp_agent 폴더의 파일이 바뀌면 여기서부터 캐시가 깨지고 새로 빌드됩니다.
 COPY . .
 
 # FastAPI 서버가 사용하는 포트 5000을 외부에 노출합니다.
 EXPOSE 5000
 
 # 컨테이너가 시작될 때 uvicorn 서버를 실행합니다.
-# "app:app"은 app.py 파일의 app 인스턴스를 의미합니다.
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]
